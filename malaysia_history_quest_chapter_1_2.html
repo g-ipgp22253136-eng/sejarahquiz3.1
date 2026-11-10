@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSSR 六年级历史：成立马来西亚与我国州属 - 神秘宝箱解密游戏</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti 彩带效果 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            user-select: none;
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chest-idle {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .chest-opening {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg) scale(1.05); }
+            75% { transform: rotate(5deg) scale(1.05); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- 顶部导航栏 -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-slate-950 text-xl font-extrabold shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm md:text-base font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-200">
+                        KSSR 六年级历史：建国与州属探秘
+                    </h1>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">单元一：成立马来西亚 | 单元二：我国的州属</p>
+                </div>
+            </div>
+
+            <!-- 数据统计面板 -->
+            <div class="flex items-center gap-3 md:gap-6 text-xs md:text-sm">
+                <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+                    <i class="fa-solid fa-coins text-amber-400"></i>
+                    <span class="text-slate-400 hidden sm:inline">积分:</span>
+                    <span id="scoreText" class="font-black text-amber-300">0</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+                    <i class="fa-solid fa-key text-yellow-400"></i>
+                    <span class="text-slate-400 hidden sm:inline">钥匙:</span>
+                    <span id="keysCount" class="font-black text-yellow-300">0</span>
+                </div>
+                <button onclick="openShopModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold px-3 py-1.5 rounded-xl shadow border border-purple-400/30 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-store text-yellow-300"></i>
+                    <span class="hidden sm:inline">勋章商城 (10枚)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 模式选择与主关卡面板 -->
+    <main class="max-w-6xl mx-auto w-full flex-1 p-3 md:p-6 flex flex-col gap-4">
+        
+        <!-- 单元切换与进度控制 -->
+        <div class="glass-card p-3 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <button id="tabUnit1" onclick="switchUnit(1)" class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow">
+                    <i class="fa-solid fa-flag"></i>
+                    <span>单元一 (成立马来西亚 40题)</span>
+                </button>
+                <button id="tabUnit2" onclick="switchUnit(2)" class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-slate-800 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>单元二 (我国州属 40题)</span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs md:text-sm">
+                <span class="text-slate-400">当前进度:</span>
+                <span id="progressText" class="font-bold text-sky-300">1 / 40</span>
+            </div>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden">
+            <div id="progressBar" class="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 h-full w-0 transition-all duration-300"></div>
+        </div>
+
+        <!-- 核心双栏布局 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+            
+            <!-- 左侧：题目交互区 (7/12) -->
+            <div class="lg:col-span-7 flex flex-col justify-between glass-card p-4 md:p-6 rounded-3xl relative">
+                <div>
+                    <!-- 题目分类标签 -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span id="categoryBadge" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-1 rounded-full font-bold">
+                            分类
+                        </span>
+                        <span id="unitTitleBadge" class="text-xs text-amber-400/90 font-semibold">
+                            单元一
+                        </span>
+                    </div>
+
+                    <!-- 题目文本 -->
+                    <h2 id="questionText" class="text-base md:text-lg font-bold text-white mb-4 leading-relaxed">
+                        加载题目中...
+                    </h2>
+
+                    <!-- 选项列表 -->
+                    <div id="optionsContainer" class="space-y-2.5 mb-4">
+                        <!-- 动态渲染选项 -->
+                    </div>
+                </div>
+
+                <!-- 知识解析与下一题控制 -->
+                <div id="explanationBox" class="hidden mt-2 p-3.5 bg-slate-900/90 border border-slate-700 rounded-2xl">
+                    <div class="flex items-start gap-2.5 mb-2">
+                        <i id="explainIcon" class="fa-solid fa-circle-check text-emerald-400 mt-1 text-base"></i>
+                        <div>
+                            <h4 id="explainTitle" class="font-bold text-xs md:text-sm text-emerald-400">回答正确！</h4>
+                            <p id="explainText" class="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">知识点解析...</p>
+                        </div>
+                    </div>
+                    <button id="nextBtn" class="w-full mt-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs md:text-sm shadow transition flex items-center justify-center gap-2">
+                        <span id="nextBtnText">进入下一题</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：宝箱与勋章展示区 (5/12) -->
+            <div class="lg:col-span-5 flex flex-col items-center justify-between glass-card p-4 md:p-6 rounded-3xl text-center gap-4">
+                <div class="w-full">
+                    <h3 class="text-sm md:text-base font-bold text-slate-300 flex items-center justify-center gap-2 mb-1">
+                        <i class="fa-solid fa-box-open text-amber-400"></i> 单元建国神秘宝箱
+                    </h3>
+                    <p class="text-xs text-slate-400">答对题目获得金钥匙，开启宝箱获取额外丰厚积分与稀有勋章！</p>
+                </div>
+
+                <!-- 宝箱图形图形与动画 -->
+                <div class="relative py-2">
+                    <div id="chestGraphic" class="w-40 h-40 md:w-48 md:h-48 rounded-3xl flex items-center justify-center text-7xl md:text-8xl text-slate-600 transition-all cursor-not-allowed bg-slate-900/60 border border-slate-700 opacity-60">
+                        <i id="chestIcon" class="fa-solid fa-box-archive"></i>
+                    </div>
+                </div>
+
+                <!-- 宝箱操作提示 -->
+                <div id="chestPrompt" class="w-full">
+                    <span class="text-xs text-slate-400 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full inline-block">
+                        <i class="fa-solid fa-lock mr-1"></i> 答对题目方可解锁宝箱
+                    </span>
+                </div>
+
+                <!-- 已解锁勋章收集统计 -->
+                <div class="w-full bg-slate-900/60 rounded-2xl p-3 border border-slate-800">
+                    <div class="flex items-center justify-between text-xs mb-2 text-slate-300">
+                        <span class="font-bold"><i class="fa-solid fa-award text-yellow-400 mr-1"></i>已收集勋章 (<span class="text-amber-300 font-normal">集齐10个胜出</span>)</span>
+                        <span id="badgeCountText" class="text-amber-400 font-extrabold">0 / 10</span>
+                    </div>
+                    <div id="badgeShowcase" class="flex gap-2 overflow-x-auto py-1 min-h-[42px] items-center">
+                        <span class="text-xs text-slate-500 italic w-full text-center">答对开箱或在商城使用积分兑换！</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="w-full border-t border-slate-800 py-3 text-center text-xs text-slate-500">
+        KSSR 六年级历史教学辅助工具 &copy; 单元一（成立马来西亚） & 单元二（我国的州属）共 80 题
+    </footer>
+
+    <!-- 宝箱奖励弹窗 -->
+    <div id="rewardModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative">
+            <div class="w-20 h-20 bg-amber-500/20 border-2 border-amber-400 text-yellow-300 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+                <i id="rewardIcon" class="fa-solid fa-award"></i>
+            </div>
+            <span id="rewardRarity" class="text-xs font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-400/30 inline-block mb-2">
+                SSR 级历史勋章
+            </span>
+            <h3 id="rewardName" class="text-xl font-black text-white mb-2">勋章名称</h3>
+            <p id="rewardDesc" class="text-xs text-slate-300 mb-4 leading-relaxed">勋章描述解析内容...</p>
+            
+            <div class="bg-slate-950/80 p-3 rounded-2xl border border-slate-800 mb-5 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-coins text-amber-400"></i>
+                <span class="text-xs text-slate-400">宝箱奖励积分:</span>
+                <span id="rewardScore" class="font-black text-amber-300 text-lg">+200</span>
+            </div>
+
+            <button onclick="closeRewardModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-3 rounded-xl shadow transition">
+                收入口袋并继续
+            </button>
+        </div>
+    </div>
+
+    <!-- 勋章商城模态框 -->
+    <div id="shopModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border border-slate-700 rounded-3xl p-5 md:p-6 max-w-2xl w-full flex flex-col max-h-[90vh] shadow-2xl">
+            <!-- 头部 -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4 shrink-0">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-store text-yellow-400 text-xl"></i>
+                    <h3 class="text-base md:text-lg font-black text-white">建国勋章兑换商城</h3>
+                </div>
+                <button onclick="closeShopModal()" class="text-slate-400 hover:text-white text-lg w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- 用户积分与收集状态 -->
+            <div class="flex items-center justify-between bg-slate-950 p-3 rounded-2xl mb-4 border border-indigo-900/50 text-xs md:text-sm shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400">当前可用积分:</span>
+                    <span id="shopUserScore" class="font-black text-yellow-400 text-base">0</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400">勋章收集进度:</span>
+                    <span id="shopBadgeProgress" class="font-black text-sky-400 text-base">0 / 10</span>
+                </div>
+            </div>
+
+            <!-- 勋章卡片网格列表 -->
+            <div id="shopGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 overflow-y-auto pr-1 flex-1">
+                <!-- 动态填充勋章兑换列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏通关总结模态框 -->
+    <div id="endGameModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border-2 border-indigo-500/60 rounded-3xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl">
+            <div id="endGameIcon" class="w-20 h-20 bg-amber-500/20 border-2 border-amber-400 text-yellow-300 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            
+            <h2 id="endGameTitle" class="text-2xl md:text-3xl font-black text-white mb-1">单元测试完成！</h2>
+            <p id="endGameSub" class="text-xs text-slate-400 mb-4">恭喜你完成了包含两大单元的探秘挑战</p>
+
+            <div id="victoryStatusBox" class="p-3 mb-4 rounded-xl text-xs md:text-sm font-bold">
+                <!-- 动态填入胜负判定 -->
+            </div>
+
+            <!-- 成绩列表 -->
+            <div class="grid grid-cols-2 gap-3 mb-6 text-left">
+                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                    <p class="text-xs text-slate-400">剩余/总积分</p>
+                    <p id="finalScore" class="text-2xl font-black text-amber-400">0</p>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                    <p class="text-xs text-slate-400">答对题数</p>
+                    <p id="finalCorrect" class="text-2xl font-black text-emerald-400">0 / 40</p>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                    <p class="text-xs text-slate-400">勋章收集</p>
+                    <p id="finalBadges" class="text-2xl font-black text-sky-400">0 / 10</p>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                    <p class="text-xs text-slate-400">正确率</p>
+                    <p id="finalAccuracy" class="text-2xl font-black text-purple-400">100%</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <button id="shopBtnInEnd" onclick="closeEndModalAndOpenShop()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl shadow transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-store text-yellow-300"></i>
+                    <span>前往商城兑换勋章</span>
+                </button>
+                <button onclick="restartGame()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl border border-slate-700 transition">
+                    重新开始挑战
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 80道 KSSR 六年级历史 精选题库 ---
+        // 1-40 题：单元一 (成立马来西亚 Pembentukan Malaysia)
+        // 41-80 题：单元二 (我国的州属 Negeri-negeri di Malaysia)
+        const unit1Questions = [
+            { id: 1, category: "概念的提出", question: "最早在 1887 年提出合并英国在东南亚殖民地构想的是谁？", options: ["东姑阿都拉曼", "罗拔·布劳斯 (Lord Brassey)", "李光耀", "敦阿都拉萨"], answer: 1, explain: "1887年，英国北婆罗洲公司董事罗拔·布劳斯最早提出合并构想。" },
+            { id: 2, category: "概念的提出", question: "1961年5月27日，东姑阿都拉曼在新加坡何处正式公开提出成立马来西亚的概念？", options: ["新加坡国会大厦", "东南亚外国记者协会", "莱佛士酒店", "新加坡马来人协会"], answer: 1, explain: "东姑在东南亚外国记者协会（Adelphi Hotel）的午餐会上公开提出合并构想。" },
+            { id: 3, category: "成立原因", question: "下列哪项不是当时提倡成立马来西亚的主要原因之一？", options: ["保障国家安全与遏制共产主义", "平衡各族人口结构", "加快沙巴与砂拉越的独立进程", "彻底取消各州的皇室制度"], answer: 3, explain: "成立马来西亚旨在保障安全、加快独立及促进区域经济，并不影响君主立宪制。" },
+            { id: 4, category: "各方反应", question: "新加坡人民在 1962 年针对是否加入马来西亚举行了什么活动？", options: ["签名运动", "全民公投 (Referendum)", "大选", "示威游行"], answer: 1, explain: "1962年新加坡举行全民公投，大部分市民支持加入马来西亚。" },
+            { id: 5, category: "各方反应", question: "哪两个邻国在成立马来西亚的早期表达了强烈抗议与反对？", options: ["泰国和越南", "印度尼西亚和菲律宾", "文莱和缅甸", "新加坡和老挝"], answer: 1, explain: "印尼实施“对抗政策”(Konfrontasi)，菲律宾则对沙巴提出主权要求。" },
+            { id: 6, category: "科博德委员会", question: "1962年成立的科博德委员会 (Suruhanjaya Cobbold) 主要任务是什么？", options: ["草拟马来西亚宪法", "收集沙巴和砂拉越人民对合并的意愿", "选举第一任最高统治者", "划分全国选区"], answer: 1, explain: "科博德委员会前往沙巴与砂拉越收集民意，发现超过三分之二的人民支持合并。" },
+            { id: 7, category: "科博德委员会", question: "科博德委员会调查显示，沙巴和砂拉越人民对合并的态度如何？", options: ["完全反对", "三分之二表示支持", "只有极少数人赞成", "没有任何意见"], answer: 1, explain: "调查结果为：1/3无条件支持，1/3在有保障条件下支持，1/3反对。" },
+            { id: 8, category: "马来西亚协定", question: "1963年《马来西亚协定》(Malaysia Agreement 1963, MA63) 是在哪座城市签署的？", options: ["吉隆坡", "伦敦", "古晋", "亚庇"], answer: 1, explain: "1963年7月9日，参与各方代表在英国伦敦签署了 MA63 协定。" },
+            { id: 9, category: "马来西亚成立", question: "马来西亚最终在何时正式宣告成立？", options: ["1957年8月31日", "1963年8月31日", "1963年9月16日", "1965年8月9日"], answer: 2, explain: "1963年9月16日是马来西亚成立日（Hari Malaysia）。" },
+            { id: 10, category: "组成部分", question: "1963年成立时，马来西亚由哪四个部分联合组成？", options: ["马来亚联合邦、新加坡、沙巴、砂拉越", "马来亚联合邦、文莱、沙巴、砂拉越", "马来亚、新加坡、泰南、文莱", "沙巴、砂拉越、印尼、新加坡"], answer: 0, explain: "由马来亚联合邦、新加坡、沙巴与砂拉越共同组成（文莱最终未加入）。" },
+            { id: 11, category: "历史事件", question: "文莱最终没有加入马来西亚的主要原因是什么？", options: ["地理位置太远", "遭遇人民武装反抗及石油税收等条件未达共识", "英国政府强烈反对", "马来西亚拒绝文莱加入"], answer: 1, explain: "文莱发生武装叛乱，且在石油税收及苏丹位阶问题上未达成一致。" },
+            { id: 12, category: "历史事件", question: "新加坡在何时离开马来西亚并宣布独立？", options: ["1963年9月16日", "1964年12月31日", "1965年8月9日", "1970年1月1日"], answer: 2, explain: "因政治与经济分歧，1965年8月9日新加坡脱离马来西亚成立独立共和国。" },
+            { id: 13, category: "建国功臣", question: "被尊称为“马来西亚国父”(Bapa Malaysia) 的领袖是谁？", options: ["敦阿都拉萨 (Tun Abdul Razak)", "东姑阿都拉曼 (Tunku Abdul Rahman)", "敦胡先翁 (Tun Hussein Onn)", "敦陈修信"], answer: 1, explain: "东姑阿都拉曼极力倡导并促成了马来西亚的成立，被誉为国父。" },
+            { id: 14, category: "建国功臣", question: "在砂拉越极力支持并协助促成成立马来西亚的领袖是谁？", options: ["敦法史蒂芬 (Tun Fuad Stephens)", "敦朱加 (Tun Jugah anak Barieng)", "敦昂哥法 (Tun Ong Yoke Lin)", "李光耀"], answer: 1, explain: "敦朱加（Tun Jugah）是砂拉越著名的伊班族领袖，坚定支持成立马来西亚。" },
+            { id: 15, category: "建国功臣", question: "在沙巴积极争取权益并支持组建马来西亚的领袖是谁？", options: ["敦法史蒂芬 (Tun Fuad Stephens)", "敦丹尼斯", "敦阿卜杜拉", "敦陈祯禄"], answer: 0, explain: "敦法史蒂芬（Tun Fuad Stephens）是沙巴卡达山族重要领袖，建国功臣之一。" },
+            { id: 16, category: "委员会与组织", question: "JPKK（马来西亚团结咨询委员会）成立的主要目的是什么？", options: ["起草国家宪法", "向北婆罗洲和砂拉越人民解释成立马来西亚的意义", "征集国家国歌", "招募军队"], answer: 1, explain: "JPKK 旨在向地方领袖与民众说明并消除对成立马来西亚的顾虑。" },
+            { id: 17, category: "特权与保障", question: "沙巴和砂拉越在加入马来西亚时提出的《20条特权协议》(20 Points) 包含什么？", options: ["宗教、移民自主权及语言等保障", "完全免除一切税收", "拥有独立的外交权", "保留英国总督统治"], answer: 0, explain: "20条协议保障了沙巴和砂拉越在宗教、移民、语言及行政上的自主特权。" },
+            { id: 18, category: "各方反应", question: "印尼总统苏卡诺对成立马来西亚采取了什么对抗口号？", options: ["Merdeka!", "Ganyang Malaysia! (粉碎马来西亚)", "Malaysia Boleh!", "Hidup Malaysia!"], answer: 1, explain: "苏卡诺发起“Ganyang Malaysia”军事与外交对抗行动。" },
+            { id: 19, category: "联合国调查", question: "为何 1963 年 8 月联合国需要派遣调查团 (UNMM) 前往沙巴和砂拉越？", options: ["因印尼和菲律宾质疑科博德委员会的调查结果", "因英国拒绝退出东南亚", "因沙砂人民暴动", "因联合国要直接统治该地"], answer: 0, explain: "响应印尼与菲律宾的要求，联合国组团重新核实当地民意。" },
+            { id: 20, category: "成立日", question: "由于联合国调查团报告延期，马来西亚的成立日期从原定的1963年8月31日延至什么时候？", options: ["1963年9月16日", "1963年10月1日", "1964年1月1日", "1963年12月25日"], answer: 0, explain: "为了等待联合国调查报告，成立日顺延至 1963 年 9 月 16 日。" },
+            { id: 21, category: "建国领袖", question: "代表马来亚联合邦担任政府间委员会 (JAK) 主席并协调宪法起草的是谁？", options: ["敦拉萨 (Tun Abdul Razak)", "敦李孝式", "敦林苍佑", "敦三班丹"], answer: 0, explain: "敦阿都拉萨担任 JAK 副主席兼关键协调人，推动宪法细节设计。" },
+            { id: 22, category: "概念的提出", question: "早在1945年，哪位新加坡政治领袖也曾提出过马新合并的想法？", options: ["李光耀", "信达赛 (Tan Cheng Lock)", "汤姆斯 (Sir Thomas)", "罗拔"], answer: 0, explain: "李光耀长期倡导新加坡与马来亚合并以争取独立和经济生存。" },
+            { id: 23, category: "国家象征", question: "马来西亚成立后，原马来亚国旗上的11角星和11条纹增加到了多少？", options: ["13", "14", "15", "16"], answer: 1, explain: "当时代表14个州属（马来亚11州+新加坡+沙巴+砂拉越），故改为14角星与14条纹。" },
+            { id: 24, category: "新加坡脱离", question: "新加坡脱离马来西亚后，马来西亚的州属数量变为多少个？", options: ["12个", "13个", "14个", "15个"], answer: 1, explain: "新加坡脱离后，剩余 13 个州属（直到后来设立联邦直辖区）。" },
+            { id: 25, category: "历史地点", question: "1963年9月16日，吉隆坡的马来西亚宣告仪式是在哪里隆重举行？", options: ["独立广场 (Dataran Merdeka)", "默迪卡体育场 (Stadium Merdeka)", "国家皇宫", "国会大厦"], answer: 1, explain: "宣告仪式在默迪卡体育场举行，东姑宣读马来西亚宣言。" },
+            { id: 26, category: "历史意义", question: "成立马来西亚对沙巴和砂拉越的最直接政治意义是什么？", options: ["摆脱英国殖民统治并实现独立", "建立君主制", "成为独立的共和国", "加入联合国"], answer: 0, explain: "沙巴和砂拉越通过与马来亚联合组建马来西亚，结束了英国殖民统治。" },
+            { id: 27, category: "建国领袖", question: "敦阿都拉萨在组建马来西亚过程中扮演了什么主要角色？", options: ["担任外交部长及 JAK 委员会谈判核心", "担任科博德委员会主席", "代表英国签署协定", "担任新加坡首席部长"], answer: 0, explain: "敦阿都拉萨作为副首相，主持大量谈判与法令协调工作。" },
+            { id: 28, category: "建国领袖", question: "哪位华人领袖在筹建马来西亚期间担任财政部长并积极争取华人支持？", options: ["敦陈修信 (Tun Tan Siew Sin)", "敦林苍佑", "敦陈祯禄", "敦李孝式"], answer: 0, explain: "敦陈修信作为马华公会会长兼财长，极力推动华人社会支持合并。" },
+            { id: 29, category: "建国领袖", question: "代表印度的国会议员并积极争取印裔支持组建马来西亚的领袖是谁？", options: ["敦维纳雅甘", "敦三班丹 (Tun V.T. Sambanthan)", "敦曼尼卡", "敦苏巴马廉"], answer: 1, explain: "敦三班丹作为国大党主席，积极动员印裔社会支持建国。" },
+            { id: 30, category: "各方反应", question: "砂拉越在成立马来西亚初期，哪种政治势力曾发动反合并武装斗争？", options: ["砂拉越人民联合党左翼与地下共产组织", "保皇党", "海盗", "英国派驻军"], answer: 0, explain: "部分左翼分子和砂共武装分子曾强烈反对合并。" },
+            { id: 31, category: "协议细节", question: "MA63 协定中，沙巴和砂拉越保留了哪项重要行政管理权？", options: ["自主的移民出入境控制权", "独立发钞权", "宣战权", "任命大使权"], answer: 0, explain: "沙砂拥有独立的移民自主权，西马居民前往沙砂仍需持护照/通行证。" },
+            { id: 32, category: "各方反应", question: "菲律宾反对成立马来西亚，主要是对马来西亚的哪个地区提出主权索求？", options: ["砂拉越", "沙巴", "新加坡", "纳闽"], answer: 1, explain: "菲律宾基于苏禄苏丹历史声称对沙巴拥有主权。" },
+            { id: 33, category: "历史组织", category: "MAPHILINDO 是由哪三个国家为了解决合并争议而尝试建立的合作组织？", options: ["马来西亚、菲律宾、印度尼西亚", "马来西亚、新加坡、文莱", "马来亚、泰国、印度", "缅甸、菲律宾、印尼"], answer: 0, explain: "Ma-Phi-Lindo 由 Malaysia, Philippines, Indonesia 缩写而成。" },
+            { id: 34, category: "概念的提出", question: "1955年，敦阿都拉萨和东姑阿都拉曼访问新加坡时曾讨论过什么？", options: ["马新合并的可能性", "开辟铁路", "共同建立港口", "放弃独立"], answer: 0, explain: "早在1955年联盟赢得大选后，东姑就曾与新加坡讨论合并课题。" },
+            { id: 35, category: "历史法令", question: "1963年8月26日，马来亚国会通过了什么重要法案以迎建立马来西亚？", options: ["《马来西亚法案》(Malaysia Act 1963)", "《国家安全法》", "《独立法案》", "《宪法修正案》"], answer: 0, explain: "马来亚国会通过《马来西亚法案》修改宪法以接纳新州属。" },
+            { id: 36, category: "成立宣告", question: "东姑阿都拉曼在默迪卡体育场高呼了多少声“MERDEKA”来庆祝马来西亚成立？", options: ["3声", "5声", "7声", "9声"], answer: 2, explain: "东姑高举双手高呼了 7 声“Merdeka!”。" },
+            { id: 37, category: "建国领袖", question: "砂拉越第一任州元首是谁？", options: ["敦阿邦阿芝芝", "敦阿班依斯迈", "敦朱加 (Tun Jugah)", "敦阿邦哈芝奥蓬 (Tun Abang Haji Openg)"], answer: 3, explain: "敦阿邦哈芝奥蓬是砂拉越独立后的首任州元首。" },
+            { id: 38, category: "建国领袖", question: "沙巴的第一任州元首是谁？", options: ["敦慕斯达法 (Tun Datu Mustapha)", "敦法史蒂芬", "敦彭基兰", "敦沙班"], answer: 0, explain: "敦慕斯达法担任沙巴首任州元首，敦法史蒂芬则担任首任首席部长。" },
+            { id: 39, category: "成立日期", question: "每年9月16日的“马来西亚日”(Hari Malaysia) 从哪一年开始被列为全国公共假期？", options: ["1963年", "2000年", "2010年", "2020年"], answer: 2, explain: "马来西亚政府于 2010 年正式将 9 月 16 日列为全国法定公共假期。" },
+            { id: 40, category: "核心精神", question: "马来西亚国徽上的格言“Bersekutu Bertambah Mutu”是什么意思？", options: ["团结就是力量", "独立与自由", "勇敢与忠诚", "繁荣昌盛"], answer: 0, explain: "国徽格言含义为“团结就是力量”(Unity is Strength)。" }
+        ];
+
+        const unit2Questions = [
+            { id: 41, category: "州名由来", question: "玻璃市（Perlis）的名称据传说源自暹罗文“prow-lowy”，其本意是什么？", options: ["漂流的椰子", "捕象的陷阱", "银色的鱼", "尊贵的皇冠"], answer: 0, explain: "相传源自暹罗文 prow-lowy（漂流的椰子），另说源自马来文 peroleh。" },
+            { id: 42, category: "州名由来", question: "吉打（Kedah）的州名由来与以下哪项历史活动或传说密切相关？", options: ["采锡矿泥巴", "捕抓大象的陷阱 (Kheddah)", "槟榔树", "比萨香蕉"], answer: 1, explain: "Kedah 据说与捕抓大象的陷阱（Kheddah）或梵文 Keda（锁链）有关。" },
+            { id: 43, category: "州名由来", question: "槟城（Pulau Pinang）是因为当地早期盛产哪种植物而得名？", options: ["马坑树", "槟榔树 (Pohon Pinang)", "橡皮树", "棕榈树"], answer: 1, explain: "槟城因岛上早年到处长满槟榔树（Pohon Pinang）而得名。" },
+            { id: 44, category: "州名由来", question: "霹雳（Perak）州名称的由来主要与自然环境中的什么景象或矿产有关？", options: ["银色鱼在水中闪烁的光泽或锡米", "红色的泥土", "黄金", "黑色大石"], answer: 0, explain: "Perak 意为银色，源于河中闪烁如银的鱼鳞光泽或白银般的锡米。" },
+            { id: 45, category: "州名由来", question: "雪兰莪（Selangor）的名称传说与哪种昆虫或树木相关？", options: ["Langau（苍蝇/蝇虫）或 Mentangau 树", "蜜蜂", "蝴蝶", "甲虫"], answer: 0, explain: "相传源自 Sungai Selangor 沿岸的 Langau 昆虫或 Mentangau 树。" },
+            { id: 46, category: "州名由来", question: "森美兰（Negeri Sembilan）名称的字面含义是什么？", options: ["九个皇宫", "九个小州/地区 (Luak) 的结合", "九条大河", "九座高山"], answer: 1, explain: "Negeri Sembilan 由“九个小州/地区”(Luak) 联合组成。" },
+            { id: 47, category: "州名由来", question: "马六甲（Melaka）的名称起源传说与拜里米苏拉在什么树下休息有关？", options: ["橡胶树", "马六甲树 (Pohon Melaka)", "椰子树", "榕树"], answer: 1, explain: "拜里米苏拉看见小鹿剔狗后，以休息处的马六甲树命名该地。" },
+            { id: 48, category: "州名由来", question: "柔佛（Johor）的名称源自阿拉伯语“Jauhar”，其含义是什么？", options: ["珠宝 / 宝石", "黄金之乡", "南方之门", "安全之港"], answer: 0, explain: "源自阿拉伯语 Jauhar，意为“珠宝”或“宝石”。" },
+            { id: 49, category: "州名由来", question: "彭亨（Pahang）的名称传统上源自当地哪种巨大的树木？", options: ["马坑树 (Pohon Mahang)", "松树", "柚木树", "香蕉树"], answer: 0, explain: "源自倒在彭亨河上的巨大马坑树（Pohon Mahang）。" },
+            { id: 50, category: "州名由来", question: "登嘉楼（Terengganu）的名称传说与什么动物的牙齿有关？", options: ["虎牙", "象牙 (Taring Anu)", "鲨鱼牙", "野猪牙"], answer: 1, explain: "传说源自 Taring Anu（某物的象牙）或彩虹（Taringanu）。" },
+            { id: 51, category: "州名由来", question: "吉兰丹（Kelantan）名称的由来传说与什么自然现象或植物有关？", options: ["Kilat（闪电）或 Gelam Hutan 树", "暴风雨", "红树林", "彩虹"], answer: 0, explain: "据说源自 Kilat（闪电）或当地盛产的 Gelam Hutan 树。" },
+            { id: 52, category: "州名由来", question: "砂拉越（Sarawak）的名称起源与哪条河流或矿产有关？", options: ["砂拉越河 (Sungai Sarawak) 或锑矿 (Antimoni)", "拉让江", "金矿", "石油"], answer: 0, explain: "源自 Sungai Sarawak，或当地方言中与锑矿（Serawa）有关。" },
+            { id: 53, category: "州名由来", question: "沙巴（Sabah）的名称源自当地种植的一种特产香蕉，称为？", options: ["Pisang Emas", "Pisang Sabah / Pisang Saba", "Pisang Tanduk", "Pisang Berangan"], answer: 1, explain: "源自沿海居民大量种植的比萨沙巴香蕉（Pisang Sabah）。" },
+            { id: 54, category: "统治者衔称", question: "马来西亚哪一个州属的最高统治者独家尊称为“拉惹”(Raja)？", options: ["柔佛", "玻璃市 (Perlis)", "雪兰莪", "吉打"], answer: 1, explain: "玻璃市州最高统治者的专属衔称为“拉惹”(Raja Perlis)。" },
+            { id: 55, category: "统治者衔称", question: "森美兰州的最高统治者专属衔称是什么？", options: ["苏丹 (Sultan)", "最高统治者 (Yang di-Pertuan Besar)", "拉惹 (Raja)", "州元首"], answer: 1, explain: "森美兰最高统治者尊称为 Yang di-Pertuan Besar Negeri Sembilan。" },
+            { id: 56, category: "统治者衔称", question: "柔佛、雪兰莪、霹雳、吉打等州的最高统治者统称为？", options: ["拉惹", "苏丹 (Sultan)", "总督", "总理"], answer: 1, explain: "大部分拥有君主体制的州属最高统治者均尊称为“苏丹”。" },
+            { id: 57, category: "统治者衔称", question: "槟城、马六甲、沙巴和砂拉越的最高行政首长/元首称为什么？", options: ["苏丹", "州元首 (Yang di-Pertua Negeri)", "拉惹", "最高统治者"], answer: 1, explain: "没有世袭君主的四州，其最高首长称为“州元首”。" },
+            { id: 58, category: "首府与皇城", question: "雪兰莪州的首府（行政中心）和皇城分别是哪里？", options: ["首府：莎阿南 (Shah Alam)；皇城：巴生 (Klang)", "首府：吉隆坡；皇城：八打灵", "首府：巴生；皇城：莎阿南", "首府：梳邦；皇城：加影"], answer: 0, explain: "雪兰莪首府是莎阿南，皇城是巴生。" },
+            { id: 59, category: "首府与皇城", question: "霹雳州的首府和皇城分别是哪两个城市？", options: ["首府：怡保 (Ipoh)；皇城：江沙 (Kuala Kangsar)", "首府：太平；皇城：怡保", "首府：安顺；皇城：红土坎", "首府：江沙；皇城：怡保"], answer: 0, explain: "霹雳州首府为怡保，皇城为江沙。" },
+            { id: 60, category: "首府与皇城", question: "吉打州的首府和皇城分别是哪里？", options: ["首府：亚罗士打 (Alor Setar)；皇城：安南武吉 (Anak Bukit)", "首府：双溪大年；皇城：居林", "首府：浮罗交怡；皇城：亚罗士打", "首府：巴东色海；皇城：华玲"], answer: 0, explain: "吉打首府是亚罗士打，皇城是安南武吉。" },
+            { id: 61, category: "首府与皇城", question: "彭亨州的首府和皇城分别是哪里？", options: ["首府：关丹 (Kuantan)；皇城：北根 (Pekan)", "首府：北根；皇城：关丹", "首府：文冬；皇城：劳勿", "首府：金马仑；皇城：百乐"], answer: 0, explain: "彭亨州首府是关丹，皇城是北根。" },
+            { id: 62, category: "首府与皇城", question: "柔佛州的首府和皇城分别是哪里？", options: ["首府：新山 (Johor Bahru)；皇城：麻坡 (Muar)", "首府：麻坡；皇城：新山", "首府：居銮；皇城：笨珍", "首府：峇株巴辖；皇城：丰盛港"], answer: 0, explain: "柔佛首府是新山，皇城是麻坡（香妃城）。" },
+            { id: 63, category: "首府与皇城", question: "森美兰州的首府和皇城分别是哪里？", options: ["首府：芙蓉 (Seremban)；皇城：神安池 (Sri Menanti)", "首府：波德申；皇城：芙蓉", "首府：淡边；皇城：日叻务", "首府：神安池；皇城：林茂"], answer: 0, explain: "森美兰首府是芙蓉，皇城是神安池。" },
+            { id: 64, category: "首府与皇城", question: "玻璃市州的首府和皇城分别是哪里？", options: ["首府：加央 (Kangar)；皇城：亚娄 (Arau)", "首府：亚娄；皇城：加央", "首府：巴东梧槽；皇城：加央", "首府：朱宾；皇城：加央"], answer: 0, explain: "玻璃市首府是加央，皇城是亚娄。" },
+            { id: 65, category: "首府与皇城", question: "砂拉越和沙巴的首府分别是哪里？", options: ["砂拉越：古晋 (Kuching)；沙巴：亚庇 (Kota Kinabalu)", "砂拉越：美里；沙巴：山打根", "砂拉越：诗巫；沙巴：斗湖", "砂拉越：民都鲁；沙巴：纳闽"], answer: 0, explain: "砂拉越首府是古晋，沙巴首府是亚庇。" },
+            { id: 66, category: "直辖区", question: "吉隆坡（Kuala Lumpur）名称的由来与什么历史背景有关？", options: ["采锡矿形成的泥泞河口 (Kuala Lumpur)", "种植橡胶", "采金矿", "捕鱼港口"], answer: 0, explain: "吉隆坡位于鹅唛河与巴生河交汇处，因早期采锡泥泞而得名。" },
+            { id: 67, category: "直辖区", question: "纳闽（Labuan）作为联邦直辖区，其名称在马来语中的含义是什么？", options: ["停泊港口 (Pelabuhan)", "高山", "美丽之岛", "香蕉之乡"], answer: 0, explain: "Labuan 源自 Pelabuhan，意为船止停泊的避风港口。" },
+            { id: 68, category: "直辖区", question: "布城（Putrajaya）作为国家行政中心，是为了纪念哪位伟人而命名的？", options: ["东姑阿都拉曼 (Tunku Abdul Rahman Putra Al-Haj)", "敦阿都拉萨", "敦胡先翁", "国家元首"], answer: 0, explain: "Putrajaya 取自国父东姑阿都拉曼的名字（Putra）。" },
+            { id: 69, category: "州象征", question: "各州的“州象征”主要包含哪三样代表性元素？", options: ["州旗、州歌、州徽", "州花、州树、州鸟", "州长、州议会、州官邸", "州地图、州钱币、州警徽"], answer: 0, explain: "州旗、州歌与州徽是代表各州自主权与独特性的官方三大象征。" },
+            { id: 70, category: "州象征", question: "吉兰丹和登嘉楼的首府分别是哪里？", options: ["吉兰丹：哥打峇鲁 (Kota Bharu)；登嘉楼：瓜拉登嘉楼 (Kuala Terengganu)", "吉兰丹：瓜拉登嘉楼；登嘉楼：哥打峇鲁", "吉兰丹：关丹；登嘉楼：樟仑", "吉兰丹：话望生；登嘉楼：龙运"], answer: 0, explain: "吉兰丹首府是哥打峇鲁，登嘉楼首府是瓜拉登嘉楼。" },
+            { id: 71, category: "州象征", question: "槟城和马六甲的首府分别是哪里？", options: ["槟城：乔治市 (George Town)；马六甲：马六甲市 (Melaka)", "槟城：北海；马六甲：野新", "槟城：大山脚；马六甲：亚罗牙也", "槟城：浮罗山背；马六甲：爱极乐"], answer: 0, explain: "槟城首府是乔治市，马六甲首府是马六甲市。" },
+            { id: 72, category: "统治者制度", question: "马来西亚独特的旋转轮任最高统治者（Yang di-Pertuan Agong）制度由多少位世袭君主组成？", options: ["9位", "11位", "13位", "14位"], answer: 0, explain: "由 9 位统治者组成的统治者会议定期选出国家元首。" },
+            { id: 73, category: "直辖区", question: "马来西亚目前共有多少个联邦直辖区 (Wilayah Persekutuan)？", options: ["3个 (吉隆坡、纳闽、布城)", "2个", "4个", "5个"], answer: 0, explain: "包括吉隆坡、纳闽与布城 3 个联邦直辖区。" },
+            { id: 74, category: "首府与皇城", question: "吉兰丹州的皇城位于哪里？", options: ["哥打峇鲁 (Kota Bharu) / 哥打拉玛", "巴西马", "道北", "丹那美拉"], answer: 0, explain: "吉兰丹首府与皇城集于哥打峇鲁。" },
+            { id: 75, category: "州名由来", question: "在马来西亚，哪个州属的名称意为“获得”(Peroleh) 或“漂流的椰子”？", options: ["玻璃市 (Perlis)", "吉打", "槟城", "霹雳"], answer: 0, explain: "玻璃市（Perlis）名称由来之一即为 Peroleh。" },
+            { id: 76, category: "州象征", question: "森美兰州的州旗包含了黄色、黑色和红色，其中黑色代表什么？", options: ["统治者", "人民 (Luak 领袖/严端)", "国家", "军队"], answer: 1, explain: "森美兰州旗中黑色代表四大酋长/人民领袖（Undang）。" },
+            { id: 77, category: "地理特征", question: "马来西亚面积最大的州属和第二大的州属分别是？", options: ["第一：砂拉越；第二：沙巴", "第一：沙巴；第二：砂拉越", "第一：彭亨；第二：柔佛", "第一：霹雳；第二：吉兰丹"], answer: 0, explain: "砂拉越是马来西亚面积最大的州属，沙巴居第二。" },
+            { id: 78, category: "地理特征", question: "马来半岛（西马）面积最大的州属是哪个？", options: ["彭亨 (Pahang)", "柔佛", "霹雳", "吉兰丹"], answer: 0, explain: "彭亨州是马来半岛（西马）面积最大的州属。" },
+            { id: 79, category: "地理特征", question: "马来西亚面积最小的州属是哪一个？", options: ["玻璃市 (Perlis)", "槟城", "马六甲", "森美兰"], answer: 0, explain: "玻璃市是马来西亚面积最小的州属。" },
+            { id: 80, category: "统治者制度", question: "森美兰州的最高统治者是由谁选出的？", options: ["四大酋长 (Undang Yang Four)", "全州人民公投", "首相任命", "其他州苏丹指定"], answer: 0, explain: "森美兰的最高统治者由四大采邑酋长（Undang）遴选诞生。" }
+        ];
+
+        // --- 精简 10 枚代表性历史勋章 ---
+        const badgeDatabase = [
+            { id: 0, name: "合并倡议勋章", rarity: "R", score: 100, icon: "fa-compass", desc: "纪念 1887 年罗拔布劳斯与 1961 年东姑提出的合并构想！" },
+            { id: 1, name: "防共与独立徽章", rarity: "R", score: 100, icon: "fa-shield-halved", desc: "象征遏制共产主义势力扩张与加快沙砂独立！" },
+            { id: 2, name: "JPKK 团结咨询章", rarity: "SR", score: 150, icon: "fa-users-gear", desc: "纪念 1961 年成立的马来西亚团结咨询委员会！" },
+            { id: 3, name: "科博德民意金章", rarity: "SSR", score: 250, icon: "fa-magnifying-glass", desc: "纪念深入沙砂收集三分之二支持民意的科博德委员会！" },
+            { id: 4, name: "州属起源探索章", rarity: "SR", score: 150, icon: "fa-tree", desc: "精通 13 州属名由来（马六甲树、槟榔树、比萨香蕉等）！" },
+            { id: 5, name: "君主与皇城金章", rarity: "SR", score: 200, icon: "fa-chess-king", desc: "掌握拉惹、最高统治者、苏丹及各州皇城历史！" },
+            { id: 6, name: "MA63 圣典勋章", rarity: "SSR", score: 300, icon: "fa-file-signature", desc: "纪念 1963 年 7 月 9 日在伦敦签署的《马来西亚协定》！" },
+            { id: 7, name: "916 建国诞生日勋", rarity: "SSR", score: 300, icon: "fa-calendar-check", desc: "永恒纪念 1963 年 9 月 16 日马来西亚正式诞生！" },
+            { id: 8, name: "国父东姑阿都拉曼章", rarity: "SSR", score: 350, icon: "fa-crown", desc: "最高荣誉！致敬推动建国的高呼 7 声 Merdeka 的国父！" },
+            { id: 9, name: "团结即力量大满贯", rarity: "SSR", score: 400, icon: "fa-trophy", desc: "终极勋章！代表国家格言与全通关的至高荣誉！" }
+        ];
+
+        // --- 游戏状态 ---
+        let currentUnit = 1;
+        let activeBank = unit1Questions;
+        let currentIndex = 0;
+        let score = 0;
+        let correctAnswers = 0;
+        let keys = 0;
+        let collectedBadgeIds = new Set();
+        let readyToOpenChest = false;
+
+        const badgePrices = { "R": 80, "SR": 120, "SSR": 180 };
+
+        // 切换单元
+        function switchUnit(unitNum) {
+            currentUnit = unitNum;
+            activeBank = (unitNum === 1) ? unit1Questions : unit2Questions;
+            currentIndex = 0;
+
+            const btn1 = document.getElementById('tabUnit1');
+            const btn2 = document.getElementById('tabUnit2');
+
+            if (unitNum === 1) {
+                btn1.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow";
+                btn2.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-slate-800 text-slate-400 hover:text-slate-200";
+                document.getElementById('unitTitleBadge').innerText = "单元一：成立马来西亚";
+            } else {
+                btn2.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow";
+                btn1.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-2 bg-slate-800 text-slate-400 hover:text-slate-200";
+                document.getElementById('unitTitleBadge').innerText = "单元二：我国的州属";
+            }
+
+            renderQuestion();
+        }
+
+        // 渲染题目
+        function renderQuestion() {
+            const q = activeBank[currentIndex];
+            
+            document.getElementById('progressText').innerText = `${currentIndex + 1} / ${activeBank.length}`;
+            document.getElementById('progressBar').style.width = `${((currentIndex + 1) / activeBank.length) * 100}%`;
+            document.getElementById('categoryBadge').innerText = `分类：${q.category}`;
+            document.getElementById('questionText').innerText = `${q.id}. ${q.question}`;
+
+            document.getElementById('explanationBox').classList.add('hidden');
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-3 md:p-3.5 rounded-2xl text-xs md:text-sm font-medium transition-all flex items-center justify-between border glass-card hover:bg-slate-800/80 hover:border-slate-500 text-slate-200`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt}</span>
+                    </div>
+                    <i class="fa-regular fa-circle text-slate-500 status-icon shrink-0"></i>
+                `;
+                btn.onclick = () => selectOption(idx);
+                container.appendChild(btn);
+            });
+
+            updateChestState();
+        }
+
+        function selectOption(selectedIdx) {
+            const q = activeBank[currentIndex];
+            const options = document.querySelectorAll('#optionsContainer button');
+            
+            options.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selectedIdx === q.answer;
+
+            if (isCorrect) {
+                correctAnswers++;
+                keys++;
+                score += 50;
+                readyToOpenChest = true;
+
+                options[selectedIdx].className = 'w-full text-left p-3 md:p-3.5 rounded-2xl text-xs md:text-sm font-bold transition-all flex items-center justify-between border bg-emerald-950/80 border-emerald-500 text-emerald-200 shadow-lg';
+                options[selectedIdx].querySelector('.status-icon').className = 'fa-solid fa-circle-check text-emerald-400';
+
+                document.getElementById('explainTitle').innerText = "回答正确！+50积分并获得 1 把金钥匙！";
+                document.getElementById('explainTitle').className = "font-bold text-xs md:text-sm text-emerald-400";
+                document.getElementById('explainIcon').className = "fa-solid fa-key text-amber-400 mt-1 text-base";
+                document.getElementById('nextBtnText').innerText = "开宝箱 / 进入下一题";
+            } else {
+                readyToOpenChest = false;
+                options[selectedIdx].className = 'w-full text-left p-3 md:p-3.5 rounded-2xl text-xs md:text-sm font-bold transition-all flex items-center justify-between border bg-rose-950/80 border-rose-500 text-rose-200';
+                options[selectedIdx].querySelector('.status-icon').className = 'fa-solid fa-circle-xmark text-rose-400';
+
+                options[q.answer].className = 'w-full text-left p-3 md:p-3.5 rounded-2xl text-xs md:text-sm font-bold transition-all flex items-center justify-between border bg-emerald-950/40 border-emerald-500/60 text-emerald-300';
+                
+                document.getElementById('explainTitle').innerText = "回答错误！遗憾未能获得钥匙。";
+                document.getElementById('explainTitle').className = "font-bold text-xs md:text-sm text-rose-400";
+                document.getElementById('explainIcon').className = "fa-solid fa-circle-xmark text-rose-400 mt-1 text-base";
+                document.getElementById('nextBtnText').innerText = "总结教训，进入下一题";
+            }
+
+            document.getElementById('scoreText').innerText = score;
+            document.getElementById('keysCount').innerText = keys;
+
+            document.getElementById('explainText').innerText = q.explain;
+            document.getElementById('explanationBox').classList.remove('hidden');
+
+            updateChestState();
+        }
+
+        function updateChestState() {
+            const chest = document.getElementById('chestGraphic');
+            const prompt = document.getElementById('chestPrompt');
+
+            if (readyToOpenChest && keys > 0) {
+                chest.className = "w-40 h-40 md:w-48 md:h-48 rounded-3xl flex items-center justify-center text-7xl md:text-8xl text-amber-300 chest-idle hover:scale-105 transition-all cursor-pointer bg-amber-500/20 border-2 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.5)]";
+                prompt.innerHTML = `
+                    <span class="text-xs md:text-sm bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 px-3.5 py-1.5 rounded-full font-black shadow-lg animate-bounce inline-block">
+                        <i class="fa-solid fa-key mr-1"></i> 点击宝箱或右下按钮开启！
+                    </span>
+                `;
+            } else {
+                chest.className = "w-40 h-40 md:w-48 md:h-48 rounded-3xl flex items-center justify-center text-7xl md:text-8xl text-slate-600 transition-all cursor-not-allowed bg-slate-900/60 border border-slate-700 opacity-60";
+                prompt.innerHTML = `
+                    <span class="text-xs text-slate-400 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full">
+                        <i class="fa-solid fa-lock mr-1"></i> 答对题目方可解锁宝箱
+                    </span>
+                `;
+            }
+        }
+
+        document.getElementById('chestGraphic').onclick = () => {
+            if (readyToOpenChest && keys > 0) {
+                openChest();
+            }
+        };
+
+        function openChest() {
+            if (!readyToOpenChest || keys <= 0) return;
+            
+            keys--;
+            readyToOpenChest = false;
+            document.getElementById('keysCount').innerText = keys;
+
+            const chest = document.getElementById('chestGraphic');
+            const icon = document.getElementById('chestIcon');
+            
+            chest.className = "w-40 h-40 md:w-48 md:h-48 rounded-3xl flex items-center justify-center text-7xl md:text-8xl text-yellow-300 chest-opening bg-amber-500/30 border-2 border-yellow-300";
+            icon.className = "fa-solid fa-box-open";
+
+            setTimeout(() => {
+                let uncollectedIndices = badgeDatabase
+                    .map((_, idx) => idx)
+                    .filter(idx => !collectedBadgeIds.has(idx));
+
+                let chosenIndex;
+                if (uncollectedIndices.length > 0) {
+                    chosenIndex = uncollectedIndices[Math.floor(Math.random() * uncollectedIndices.length)];
+                } else {
+                    chosenIndex = Math.floor(Math.random() * badgeDatabase.length);
+                }
+
+                const badge = badgeDatabase[chosenIndex];
+                
+                collectedBadgeIds.add(chosenIndex);
+                score += badge.score;
+
+                document.getElementById('scoreText').innerText = score;
+                document.getElementById('badgeCountText').innerText = `${collectedBadgeIds.size} / ${badgeDatabase.length}`;
+
+                showRewardModal(badge);
+                renderBadgeShowcase();
+
+                icon.className = "fa-solid fa-box-archive";
+                updateChestState();
+
+                confetti({
+                    particleCount: 70,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+
+            }, 600);
+        }
+
+        function showRewardModal(badge) {
+            const modal = document.getElementById('rewardModal');
+            document.getElementById('rewardIcon').className = `fa-solid ${badge.icon}`;
+            document.getElementById('rewardRarity').innerText = `${badge.rarity} 级历史勋章`;
+            document.getElementById('rewardName').innerText = badge.name;
+            document.getElementById('rewardDesc').innerText = badge.desc;
+            document.getElementById('rewardScore').innerText = badge.score;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 50);
+        }
+
+        function closeRewardModal() {
+            const modal = document.getElementById('rewardModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                loadNextQuestion();
+            }, 250);
+        }
+
+        function renderBadgeShowcase() {
+            const container = document.getElementById('badgeShowcase');
+            container.innerHTML = '';
+
+            if (collectedBadgeIds.size === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-500 italic w-full text-center">答对开箱或在商城使用积分兑换！</span>`;
+                return;
+            }
+
+            Array.from(collectedBadgeIds).forEach(id => {
+                const b = badgeDatabase[id];
+                const item = document.createElement('div');
+                item.className = "w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-sm shrink-0 shadow";
+                item.title = `${b.name} (${b.rarity})`;
+                item.innerHTML = `<i class="fa-solid ${b.icon}"></i>`;
+                container.appendChild(item);
+            });
+        }
+
+        // 勋章商城
+        function openShopModal() {
+            document.getElementById('shopUserScore').innerText = score;
+            document.getElementById('shopBadgeProgress').innerText = `${collectedBadgeIds.size} / ${badgeDatabase.length}`;
+            renderShopGrid();
+
+            const modal = document.getElementById('shopModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 50);
+        }
+
+        function closeShopModal() {
+            const modal = document.getElementById('shopModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+
+            if (currentIndex >= activeBank.length) {
+                endGame();
+            }
+        }
+
+        function renderShopGrid() {
+            const container = document.getElementById('shopGrid');
+            container.innerHTML = '';
+
+            badgeDatabase.forEach((b, idx) => {
+                const isOwned = collectedBadgeIds.has(idx);
+                const price = badgePrices[b.rarity] || 100;
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-2xl border flex flex-col justify-between items-center text-center transition ${
+                    isOwned 
+                    ? 'bg-slate-900/60 border-slate-800 opacity-80' 
+                    : 'bg-slate-800/60 border-indigo-500/30 hover:border-indigo-400'
+                }`;
+
+                card.innerHTML = `
+                    <div class="w-10 h-10 rounded-full ${isOwned ? 'bg-slate-800 text-emerald-400 border border-emerald-500/40' : 'bg-purple-500/20 text-purple-300 border border-purple-400/30'} flex items-center justify-center text-lg mb-1.5">
+                        <i class="fa-solid ${b.icon}"></i>
+                    </div>
+                    <span class="text-xs font-bold text-white line-clamp-1">${b.name}</span>
+                    <span class="text-[10px] text-amber-400 font-semibold mb-2">${b.rarity} 级勋章</span>
+
+                    ${isOwned 
+                        ? `<span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded-lg border border-emerald-500/30 w-full"><i class="fa-solid fa-check mr-1"></i>已拥有</span>` 
+                        : `<button onclick="buyBadge(${idx}, ${price})" class="w-full text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 py-1 rounded-lg transition shadow flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-coins"></i>
+                            <span>${price} 兑换</span>
+                          </button>`
+                    }
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function buyBadge(badgeIdx, price) {
+            if (score < price) {
+                alert(`积分不足！还需要 ${price - score} 积分。请继续答对题目获取积分。`);
+                return;
+            }
+
+            score -= price;
+            collectedBadgeIds.add(badgeIdx);
+
+            document.getElementById('scoreText').innerText = score;
+            document.getElementById('shopUserScore').innerText = score;
+            document.getElementById('shopBadgeProgress').innerText = `${collectedBadgeIds.size} / ${badgeDatabase.length}`;
+            document.getElementById('badgeCountText').innerText = `${collectedBadgeIds.size} / ${badgeDatabase.length}`;
+
+            renderShopGrid();
+            renderBadgeShowcase();
+
+            confetti({
+                particleCount: 40,
+                spread: 40,
+                origin: { y: 0.5 }
+            });
+        }
+
+        function closeEndModalAndOpenShop() {
+            const endModal = document.getElementById('endGameModal');
+            endModal.classList.add('opacity-0');
+            setTimeout(() => {
+                endModal.classList.add('hidden');
+                openShopModal();
+            }, 250);
+        }
+
+        document.getElementById('nextBtn').onclick = () => {
+            if (readyToOpenChest && keys > 0) {
+                openChest();
+            } else {
+                loadNextQuestion();
+            }
+        };
+
+        function loadNextQuestion() {
+            currentIndex++;
+            if (currentIndex < activeBank.length) {
+                renderQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            const modal = document.getElementById('endGameModal');
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalCorrect').innerText = `${correctAnswers} / ${activeBank.length}`;
+            document.getElementById('finalBadges').innerText = `${collectedBadgeIds.size} / ${badgeDatabase.length}`;
+            
+            const acc = Math.round((correctAnswers / activeBank.length) * 100);
+            document.getElementById('finalAccuracy').innerText = `${acc}%`;
+
+            const hasAllBadges = collectedBadgeIds.size >= badgeDatabase.length;
+            const statusBox = document.getElementById('victoryStatusBox');
+            const endTitle = document.getElementById('endGameTitle');
+            const endSub = document.getElementById('endGameSub');
+            const endIcon = document.getElementById('endGameIcon');
+            const shopBtn = document.getElementById('shopBtnInEnd');
+
+            if (hasAllBadges) {
+                endIcon.className = "w-20 h-20 bg-amber-500/20 border-2 border-amber-400 text-yellow-300 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-[0_0_25px_rgba(245,158,11,0.6)]";
+                endTitle.innerText = "🏆 终极大满贯胜利！";
+                endTitle.className = "text-2xl md:text-3xl font-black text-amber-300 mb-1";
+                endSub.innerText = "你已完美集齐全部 10 枚历史精选勋章，解锁六年级历史探秘大师称号！";
+                
+                statusBox.className = "p-3 mb-4 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs md:text-sm font-bold";
+                statusBox.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-emerald-400"></i> 胜利达成：成功集齐 10/10 枚勋章！勋章展柜已完全清空！`;
+                
+                shopBtn.classList.add('hidden');
+
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.5 }
+                });
+            } else {
+                endIcon.className = "w-20 h-20 bg-indigo-500/20 border-2 border-indigo-400 text-indigo-300 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl";
+                endTitle.innerText = "本单元答题完成！";
+                endTitle.className = "text-2xl md:text-3xl font-black text-white mb-1";
+                endSub.innerText = "你赚取了丰厚积分！只需去商城兑换完剩余勋章即可获胜！";
+                
+                statusBox.className = "p-3 mb-4 rounded-xl bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs md:text-sm font-bold";
+                statusBox.innerHTML = `<i class="fa-solid fa-lock mr-1 text-amber-400"></i> 尚缺乏 ${badgeDatabase.length - collectedBadgeIds.size} 枚勋章！请在【勋章商城】中使用积分直接兑换补齐！`;
+
+                shopBtn.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 50);
+        }
+
+        function restartGame() {
+            currentIndex = 0;
+            score = 0;
+            correctAnswers = 0;
+            keys = 0;
+            collectedBadgeIds.clear();
+            readyToOpenChest = false;
+
+            document.getElementById('scoreText').innerText = '0';
+            document.getElementById('keysCount').innerText = '0';
+            document.getElementById('badgeCountText').innerText = '0 / 10';
+
+            const modal = document.getElementById('endGameModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+
+            renderBadgeShowcase();
+            renderQuestion();
+        }
+
+        window.onload = () => {
+            renderQuestion();
+        };
+    </script>
+</body>
+</html>
